@@ -17,6 +17,7 @@ in
     { src
     , packageJSON ? src + "/package.json"
     , pnpmLockYaml ? src + "/pnpm-lock.yaml"
+    , pnpmWorkspaceYaml ? src + "/pnpm-workspace.yaml"
     , pname ? (fromJSON (readFile packageJSON)).name
     , version ? (fromJSON (readFile packageJSON)).version or null
     , name ? if version != null then "${pname}-${version}" else pname
@@ -117,6 +118,7 @@ in
                     ([
                       { name = "package.json"; value = packageJSON; }
                       { name = "pnpm-lock.yaml"; value = pnpmLockYaml; }
+                      { name = "pnpm-workspace.yaml"; value = pnpmWorkspaceYaml; }
                     ] ++ extraNodeModuleSources)
                 );
 
@@ -124,7 +126,7 @@ in
                 export HOME=$NIX_BUILD_TOP # Some packages need a writable HOME
 
                 store=$(pnpm store path)
-                mkdir -p $(dirname $store)
+                mkdir -vp $(dirname $store)
 
                 # solve pnpm: EACCES: permission denied, copyfile '/build/.pnpm-store
                 ${if !copyPnpmStore
