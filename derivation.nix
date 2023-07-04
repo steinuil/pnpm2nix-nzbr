@@ -96,6 +96,8 @@ in
                 mkdir -p $(dirname $store)
                 ln -s $out $(pnpm store path)
 
+                echo ${concatStringsSep " " deps}
+
                 pnpm store add ${concatStringsSep " " (deps)}
               '';
 
