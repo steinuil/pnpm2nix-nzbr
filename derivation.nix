@@ -77,7 +77,7 @@ in
           '';
 
           passthru = {
-            inherit attrs;
+            attrs = removeAttrs [ "packageOverrides" ] attrs;
 
             pnpmStore =
               let
