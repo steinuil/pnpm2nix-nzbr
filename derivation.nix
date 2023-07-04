@@ -31,6 +31,7 @@ in
     , nodejs ? nodePkg
     , pnpm ? nodejs.pkgs.pnpm
     , pkg-config ? pkgConfigPkg
+    , packageOverrides ? { }
     , ...
     }@attrs:
     stdenv.mkDerivation (
@@ -78,18 +79,25 @@ in
           passthru = {
             inherit attrs;
 
-            pnpmStore = runCommand "${name}-pnpm-store"
-              {
-                nativeBuildInputs = [ nodejs pnpm ];
-              } ''
-              mkdir -p $out
+            pnpmStore =
+              let
+                deps = dependencyTarballs {
+                  inherit registry packageOverrides;
+                  lockfile = pnpmLockYaml;
+                };
+              in
+              runCommand "${name}-pnpm-store"
+                {
+                  nativeBuildInputs = [ nodejs pnpm ];
+                } ''
+                mkdir -p $out
 
-              store=$(pnpm store path)
-              mkdir -p $(dirname $store)
-              ln -s $out $(pnpm store path)
+                store=$(pnpm store path)
+                mkdir -p $(dirname $store)
+                ln -s $out $(pnpm store path)
 
-              pnpm store add ${concatStringsSep " " (dependencyTarballs { inherit registry; lockfile = pnpmLockYaml; })}
-            '';
+                pnpm store add ${concatStringsSep " " (deps)}
+              '';
 
             nodeModules = stdenv.mkDerivation {
               name = "${name}-node-modules";
@@ -134,6 +142,8 @@ in
           };
 
         })
-        (attrs // { extraNodeModuleSources = null; })
+        (attrs // {
+          extraNodeModuleSources = null;
+        })
     );
 }

@@ -15,10 +15,11 @@ rec {
 
   parseLockfile = lockfile: builtins.fromJSON (readFile (runCommand "toJSON" { } "${remarshal}/bin/yaml2json ${lockfile} $out"));
 
-  dependencyTarballs = { registry, lockfile }:
+  dependencyTarballs = { registry, lockfile, packageOverrides }:
     unique (
       mapAttrsToList
         (n: v:
+          if hasAttr n packageOverrides then packageOverrides.${n} else
           let
             name = withoutVersion n;
             baseName = last (splitString "/" (withoutVersion n));
