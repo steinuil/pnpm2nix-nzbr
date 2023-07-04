@@ -144,6 +144,7 @@ in
         })
         (attrs // {
           extraNodeModuleSources = null;
+          packageOverrides = null;
         })
     );
 }
